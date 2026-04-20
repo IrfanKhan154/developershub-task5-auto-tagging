@@ -20,32 +20,34 @@ CANDIDATE_TAGS = [
     "general_inquiry",
 ]
 
+DEFAULT_FALLBACK_TAGS = ["general_inquiry", "technical_issue", "account_access"]
+
 
 def build_zero_shot_prompt(ticket: str) -> str:
     return (
-        "You are a support ticket classifier.\\n"
-        "Task: Read the ticket and select the top 3 most relevant tags from the allowed list.\\n"
-        f"Allowed tags: {', '.join(CANDIDATE_TAGS)}\\n"
-        "Return ONLY a JSON array with exactly 3 tags in ranked order.\\n"
+        "You are a support ticket classifier.\n"
+        "Task: Read the ticket and select the top 3 most relevant tags from the allowed list.\n"
+        f"Allowed tags: {', '.join(CANDIDATE_TAGS)}\n"
+        "Return ONLY a JSON array with exactly 3 tags in ranked order.\n"
         f"Ticket: {ticket}"
     )
 
 
 def build_few_shot_prompt(ticket: str) -> str:
     return (
-        "You are a support ticket classifier.\\n"
-        "Select top 3 tags from allowed tags and return ONLY a JSON array.\\n"
-        f"Allowed tags: {', '.join(CANDIDATE_TAGS)}\\n\\n"
-        "Example 1\\n"
-        "Ticket: I was charged twice this month and need a refund.\\n"
-        'Output: ["billing", "refund", "subscription"]\\n\\n'
-        "Example 2\\n"
-        "Ticket: The app crashes when I upload a profile image.\\n"
-        'Output: ["technical_issue", "bug_report", "account_access"]\\n\\n'
-        "Example 3\\n"
-        "Ticket: I cannot log in and the reset email never arrives.\\n"
-        'Output: ["account_access", "password_reset", "technical_issue"]\\n\\n'
-        f"Now classify this ticket:\\nTicket: {ticket}"
+        "You are a support ticket classifier.\n"
+        "Select top 3 tags from allowed tags and return ONLY a JSON array.\n"
+        f"Allowed tags: {', '.join(CANDIDATE_TAGS)}\n\n"
+        "Example 1\n"
+        "Ticket: I was charged twice this month and need a refund.\n"
+        'Output: ["billing", "refund", "subscription"]\n\n'
+        "Example 2\n"
+        "Ticket: The app crashes when I upload a profile image.\n"
+        'Output: ["technical_issue", "bug_report", "account_access"]\n\n'
+        "Example 3\n"
+        "Ticket: I cannot log in and the reset email never arrives.\n"
+        'Output: ["account_access", "password_reset", "technical_issue"]\n\n'
+        f"Now classify this ticket:\nTicket: {ticket}"
     )
 
 
@@ -117,7 +119,7 @@ def classify_ticket(ticket: str, model: str, mode: str) -> List[str]:
 
     # Fallback to general_inquiry if model output is unusable.
     if not result:
-        return ["general_inquiry", "technical_issue", "account_access"]
+        return DEFAULT_FALLBACK_TAGS.copy()
 
     # Ensure exactly top 3 if possible.
     for tag in CANDIDATE_TAGS:
