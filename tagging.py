@@ -86,12 +86,12 @@ def parse_tags(text: str) -> List[str]:
 
 
 def call_llm(client: OpenAI, prompt: str, model: str) -> List[str]:
-    response = client.responses.create(
+    response = client.chat.completions.create(
         model=model,
-        input=prompt,
+        messages=[{"role": "user", "content": prompt}],
         temperature=0,
     )
-    text = response.output_text or ""
+    text = (response.choices[0].message.content or "").strip()
     return parse_tags(text)
 
 
